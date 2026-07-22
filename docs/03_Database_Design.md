@@ -1,623 +1,403 @@
-# Database Design
+# 03 - Database Design
 
-**Document Version:** 1.0
-
-**Project:** Team Rostering & Queue Management System
-
-**Last Updated:** July 2026
+Version: 2.0
+Status: Active
+Last Updated: July 2026
 
 ---
 
-# 1. Introduction
+# Purpose
 
-This document describes the database architecture of the Team Rostering & Queue Management System.
+This document defines the database architecture of the Operations Workforce Management System.
 
-The application uses PostgreSQL 16 as its relational database and SQLAlchemy 2.0 as the Object Relational Mapper (ORM).
+It describes:
 
-Database schema changes are version controlled using Alembic migrations.
+- Database philosophy
+- Naming conventions
+- Entity relationships
+- Table responsibilities
+- Constraints
+- Data ownership
+- Implementation strategy
 
-The database has been designed to support future expansion while keeping the current implementation simple and maintainable.
+The database has been designed around the business domain rather than the user interface.
 
----
-
-# 2. Design Goals
-
-The database has been designed with the following objectives.
-
-- Normalize operational data
-- Minimize data duplication
-- Maintain referential integrity
-- Support future business growth
-- Keep queries efficient
-- Remain compatible with SQLAlchemy ORM
+Each table represents a single business concept and has one clearly defined responsibility.
 
 ---
 
-# 3. Current Database
+# Design Principles
 
-Current Tables
+The database follows several architectural principles.
 
-```
-employees
+## Normalization
 
-alembic_version
-```
+Business data is stored in normalized form.
 
-The Employee table is currently the only business table.
-
-Additional tables will be introduced as new modules are implemented.
-
----
-
-# 4. Entity Relationship Overview
-
-Current System
-
-```
-+------------------+
-|    Employees     |
-+------------------+
-```
-
-Future System
-
-```
-Employees
-      │
-      ├────────────┐
-      │            │
-      ▼            ▼
-Leaves        Queue Assignments
-      │            │
-      ▼            ▼
-Roster Generation
-      │
-      ▼
-Roster History
-```
-
----
-
-# 5. Employee Table
-
-Table Name
-
-```
-employees
-```
-
-Purpose
-
-Stores all employee master information required for roster generation.
-
----
-
-## Columns
-
-| Column | Type | Nullable | Description |
-|----------|------------|----------|---------------------------|
-| employee_code | VARCHAR(20) | No | Primary Key |
-| full_name | VARCHAR(100) | No | Employee Full Name |
-| role | ENUM | No | L1 or L2 |
-| gender | ENUM | No | Male or Female |
-| is_active | BOOLEAN | No | Active employee |
-| is_archived | BOOLEAN | No | Soft delete flag |
-| created_at | TIMESTAMP | No | Record creation time |
-| updated_at | TIMESTAMP | No | Last update time |
-
----
-
-# 6. Primary Key Strategy
-
-Current Primary Key
-
-```
-employee_code
-```
-
-Reason
-
-The business guarantees that employee codes are
-
-- Unique
-- Permanent
-- Never reused
-- Immutable
-
-Using the business identifier as the primary key avoids unnecessary surrogate IDs.
-
-Future tables may use internal numeric IDs where appropriate.
-
----
-
-# 7. Employee Roles
-
-Employee roles are stored as PostgreSQL ENUM values.
-
-Current Roles
-
-```
-L1
-
-L2
-```
-
-Reason
-
-Roles are limited, stable, and rarely change.
-
-ENUM improves readability and prevents invalid values.
-
----
-
-# 8. Gender Enumeration
-
-Current values
-
-```
-Male
-
-Female
-```
-
-Gender is implemented using PostgreSQL ENUM through SQLAlchemy.
-
-Advantages
-
-- Prevents invalid values
-- Consistent API responses
-- Easy validation
-
----
-
-# 9. Audit Fields
-
-Every business entity inherits from BaseModel.
-
-Current audit columns
-
-```
-created_at
-
-updated_at
-```
-
-Purpose
-
-- Track record creation
-- Track last modification
-- Future reporting
-- Auditing
-- Troubleshooting
-
----
-
-# 10. Soft Delete Strategy
-
-Employees are never physically deleted.
-
-Instead,
-
-```
-is_archived = TRUE
-```
-
-Advantages
-
-- Prevent accidental data loss
-- Preserve historical roster information
-- Maintain audit history
-- Support employee restoration
-
-Current implementation
-
-```
-FALSE
-```
-
-Future implementation
-
-Archive endpoint
-
-```
-PATCH /employees/{employee_code}/archive
-```
-
----
-
-# 11. Active Status
-
-Current field
-
-```
-is_active
-```
-
-Purpose
-
-Indicates whether an employee is currently eligible for scheduling.
-
-Possible values
-
-```
-TRUE
-
-FALSE
-```
-
-Difference from archive
-
-```
-Active
-
-↓
-
-Employee currently works
-```
-
-```
-Archived
-
-↓
-
-Employee removed from system
-```
-
----
-
-# 12. Naming Conventions
-
-Tables
-
-Plural
-
-Examples
-
-```
-employees
-
-queues
-
-rosters
-
-leaves
-```
-
-Columns
-
-Snake case
-
-Examples
-
-```
-employee_code
-
-full_name
-
-created_at
-```
-
-Primary Keys
-
-Business key where appropriate.
-
-Otherwise
-
-```
-id
-```
-
-Foreign Keys
-
-Reference target table.
+The database never stores multiple business concepts inside a single field.
 
 Example
 
+Incorrect
+
 ```
+Queues
+
+"B2C, FD"
+```
+
+Correct
+
+```
+Queue Assignment
+
+Employee
+Queue
+Time Block
+
+Employee
+Queue
+Time Block
+```
+
+---
+
+## Single Responsibility
+
+Each table represents one business concept.
+
+Examples
+
+Employee
+
+Queue
+
+Monthly Roster
+
+Daily Allocation
+
+Queue Assignment
+
+Supervisor Assignment
+
+---
+
+## Single Source of Truth
+
+Each business concept has one owner.
+
+Employee information belongs only to Employee.
+
+Queue information belongs only to Queue.
+
+Availability belongs only to Monthly Roster.
+
+Assignments belong only to Daily Allocation.
+
+---
+
+## Historical Integrity
+
+Historical information is preserved.
+
+Employees are archived.
+
+Queues are archived.
+
+Daily allocations remain immutable after archival.
+
+---
+
+# Database Modules
+
+The database consists of two business domains.
+
+```
+Workforce Planning
+
+Operations Execution
+```
+
+---
+
+# Workforce Planning Tables
+
+Employee
+
+Shift
+
+Leave
+
+MonthlyRoster
+
+MonthlyRosterEntry
+
+---
+
+# Operations Execution Tables
+
+Queue
+
+TimeBlock
+
+DailyAllocation
+
+QueueAssignment
+
+SupervisorAssignment
+
+StaffingRequirement
+
+---
+
+# Table Responsibilities
+
+## Employee
+
+Stores employee master data.
+
+Owns:
+
+- Name
+- Employee Code
+- Level
+- Status
+
+---
+
+## Shift
+
+Defines working shifts.
+
+Example
+
+First
+
+Second
+
+---
+
+## Leave
+
+Stores employee leave information.
+
+---
+
+## MonthlyRoster
+
+Represents one monthly planning cycle.
+
+---
+
+## MonthlyRosterEntry
+
+Represents one employee's workforce status for one calendar day.
+
+---
+
+## Queue
+
+Stores operational queues.
+
+Examples
+
+B2C
+
+FD
+
+Communication
+
+Pennant
+
+---
+
+## TimeBlock
+
+Defines configurable operational periods.
+
+Morning
+
+Afternoon
+
+Evening
+
+---
+
+## DailyAllocation
+
+Represents one operational plan for one calendar day.
+
+---
+
+## QueueAssignment
+
+Represents one queue monitored by one employee during one time block.
+
+---
+
+## SupervisorAssignment
+
+Represents L2 supervision during one operational period.
+
+---
+
+## StaffingRequirement
+
+Stores configurable staffing requirements.
+
+Example
+
+Morning
+
+Minimum L1
+
+Minimum L2
+
+---
+
+# Relationships
+
+```
+Employee
+    │
+    ▼
+MonthlyRosterEntry
+
+MonthlyRoster
+    │
+    ▼
+MonthlyRosterEntry
+
+DailyAllocation
+    │
+    ├──────────────┐
+    ▼              ▼
+QueueAssignment  SupervisorAssignment
+
+QueueAssignment
+        │
+        ├──────────┐
+        ▼          ▼
+Employee      Queue
+        │
+        ▼
+TimeBlock
+```
+
+---
+
+# Naming Conventions
+
+Primary Keys
+
+id
+
+Foreign Keys
+
 employee_id
 
 queue_id
 
-roster_id
-```
+time_block_id
+
+daily_allocation_id
+
+Snake case is used throughout the database.
 
 ---
 
-# 13. SQLAlchemy Model Hierarchy
+# Constraints
 
-```
-DeclarativeBase
+The database enforces:
 
-↓
+Primary Keys
 
-Base
+Foreign Keys
 
-↓
-
-BaseModel
-
-↓
-
-Employee
-```
-
-Only one DeclarativeBase exists.
-
-This prevents SQLAlchemy metadata fragmentation and Alembic migration issues.
-
----
-
-# 14. Migration Strategy
-
-Database schema changes are managed using Alembic.
-
-Migration Workflow
-
-```
-Modify SQLAlchemy Model
-
-↓
-
-Generate Migration
-
-↓
-
-Review Migration
-
-↓
-
-Upgrade Database
-
-↓
-
-Verify Schema
-```
-
-Current migration
-
-```
-Create Employees Table
-```
-
-Future migrations
-
-```
-Queues
-
-Leaves
-
-Roster Tables
-
-Authentication
+Unique Constraints where appropriate
 
 Indexes
-```
+
+Referential Integrity
+
+Business rules remain inside the Service Layer.
 
 ---
 
-# 15. Database Constraints
+# Soft Delete Policy
 
-Current constraints
+Employees are archived.
 
-Primary Key
+Queues are archived.
 
-```
-employee_code
-```
-
-NOT NULL
-
-```
-employee_code
-
-full_name
-
-role
-
-gender
-
-is_active
-
-is_archived
-```
-
-Future constraints
-
-- Foreign Keys
-- Unique Constraints
-- Check Constraints
-- Composite Keys
+Historical operational data is never removed.
 
 ---
 
-# 16. Index Strategy
+# Future Expansion
 
-Current
+The schema supports future additions including:
 
-Primary Key index
+Multiple Departments
 
-```
-employee_code
-```
+Multiple Locations
 
-Future indexes
+Historical Rotation
 
-```
-role
+Queue Skills
 
-is_active
+Forecasting
 
-is_archived
-```
+AI Allocation
 
-Composite indexes
-
-```
-(role, is_active)
-
-(queue_id, roster_date)
-```
-
-Indexes will be introduced only when justified by query performance.
-
-Premature indexing is intentionally avoided.
+No major redesign should be required.
 
 ---
 
-# 17. Planned Tables
-
-Employee
-
-```
-employees
-```
-
-Queues
-
-```
-queues
-
-employee_queue_assignments
-```
-
-Leaves
-
-```
-leave_requests
-```
-
-Roster
-
-```
-monthly_rosters
-
-daily_rosters
-
-roster_assignments
-```
-
-Audit
-
-```
-audit_logs
-```
-
-Authentication
-
-```
-users
-
-roles
-
-permissions
-```
-
----
-
-# 18. Future Relationships
-
-```
-Employee
-
-↓
-
-Employee Queue Assignment
-
-↓
-
-Queue
-```
-
-```
-Employee
-
-↓
-
-Leave Request
-```
-
-```
-Employee
-
-↓
-
-Roster Assignment
-
-↓
-
-Roster
-```
-
----
-
-# 19. Database Principles
-
-The database follows these principles.
-
-- Normalize until business requires denormalization.
-- Store facts, not calculations.
-- Preserve historical information.
-- Prefer soft deletes over hard deletes.
-- Use business keys only when guaranteed immutable.
-- Keep migrations under version control.
-- Avoid premature optimization.
-- Keep schema compatible with ORM.
-
----
-
-# 20. Current Status
-
-Completed
-
-- PostgreSQL setup
-- SQLAlchemy integration
-- Alembic configuration
-- Employee table
-- ENUM implementation
-- Audit fields
-- Primary key strategy
-- Soft delete design
-
-In Progress
-
-- Employee CRUD
-
-Planned
-
-- Queue schema
-- Leave schema
-- Monthly roster schema
-- Reporting schema
-- Authentication schema
-- Audit logging
-- Performance indexes
-
----
-
-# 21. Database Roadmap
+# Database Implementation Order
 
 Phase 1
 
-- Employee Management
+Queue
+
+TimeBlock
+
+---
 
 Phase 2
 
-- Queue Management
+DailyAllocation
+
+QueueAssignment
+
+SupervisorAssignment
+
+---
 
 Phase 3
 
-- Leave Management
+StaffingRequirement
+
+---
 
 Phase 4
 
-- Monthly Roster Engine
+Allocation Engine
 
-Phase 5
+---
 
-- Reporting
+# Related Documentation
 
-Phase 6
+01_Project_Overview.md
 
-- Authentication & Authorization
+02_System_Architecture.md
 
-The database has been intentionally designed to accommodate these future modules without requiring major schema redesign.
+04_API_Design.md
+
+05_Business_Rules.md
+
+09_Domain_Model.md
+
+---
+
+End of Document

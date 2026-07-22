@@ -1,441 +1,420 @@
-# Business Rules
+# 05 - Business Rules
 
-**Document Version:** 1.0
-
-**Project:** Team Rostering & Queue Management System
-
-**Last Updated:** July 2026
+Version: 2.0
+Status: Active
+Last Updated: July 2026
 
 ---
 
-# 1. Purpose
+# Purpose
 
-This document defines the business rules governing roster generation, employee management, shift allocation, queue assignments, and leave handling.
+This document defines the business rules that govern the Operations Workforce Management System.
 
-These rules represent business requirements and must be implemented by the Service Layer.
+It documents the operational policies, validation rules, constraints, and expected system behavior for both Workforce Planning and Operations Execution.
 
-Business rules must never be implemented inside repositories or routers.
-
----
-
-# 2. Business Objective
-
-The objective of the application is to automate monthly roster generation while allowing managers to manually adjust schedules without affecting the remainder of the month.
-
-The application replaces the current Excel-based workflow.
+Business rules are implemented in the Service Layer and should never be enforced solely by the database or user interface.
 
 ---
 
-# 3. Employee Roles
+# Business Domains
 
-The organization currently supports two operational roles.
+The application consists of two independent business domains.
 
-## L1 Analyst
+## Workforce Planning
 
-Responsibilities
+Responsible for determining employee availability.
 
-- Handles operational queues
-- Works Morning or Afternoon shift
-- Can be assigned to any supported queue
+Includes:
 
----
+- Employee Management
+- Shift Planning
+- Leave Management
+- Monthly Roster Planning
 
-## L2 Analyst
+Output:
 
-Responsibilities
-
-- Senior analyst
-- Supervises operations
-- Supports multiple L1 analysts
-- Required in every operational shift
+Employee Availability
 
 ---
 
-# 4. Shift Structure
+## Operations Execution
 
-Current shifts
+Responsible for assigning available employees to operational work.
 
-## Morning Shift
+Includes:
 
-Working Hours
+- Queue Management
+- Time Blocks
+- Daily Allocation
+- Supervisor Allocation
 
-```
-08:00 AM – 05:00 PM
-```
+Output:
 
-Required staffing
-
-- 5 L1 Analysts
-- 2 L2 Analysts
+Daily Operational Plan
 
 ---
 
-## Afternoon Shift
+# Workforce Planning Rules
 
-Working Hours
+## Employee Management
 
-```
-01:00 PM – 10:00 PM
-```
+### BR-001
 
-Required staffing
-
-- 5 L1 Analysts
-- 2 L2 Analysts
+Employee Codes must be unique.
 
 ---
 
-## Overlap Period
+### BR-002
 
-Between
+Employees are archived instead of deleted.
 
-```
-01:00 PM – 05:00 PM
-```
-
-Both shifts operate simultaneously.
-
-Total workforce during overlap
-
-- 10 L1 Analysts
-- 4 L2 Analysts
-
-This period is used for queue balancing and workload distribution.
+Historical records must always remain intact.
 
 ---
 
-# 5. Shift Rotation
+### BR-003
 
-Employees rotate between Morning and Afternoon shifts.
-
-Current business rule
-
-Rotation occurs every
-
-```
-2 weeks
-```
-
-The system should support configurable rotation periods in future versions.
+Archived employees cannot appear in newly created Monthly Rosters.
 
 ---
 
-# 6. Weekend Rules
+### BR-004
 
-Operations run throughout the week.
+Employee Level determines operational responsibilities.
 
-Employees may work
+Example:
 
-- Monday
-- Tuesday
-- Wednesday
-- Thursday
-- Friday
-- Saturday
-- Sunday
-
-Employees working weekends receive weekday compensatory offs.
+- L1
+- L2
 
 ---
 
-# 7. Monthly Off Rules
+# Monthly Workforce Planning
 
-Each employee receives
+### BR-005
 
-```
-6 days off
-```
+Each employee has at most one workforce status per calendar day.
 
-per month.
+Examples:
 
-Typical distribution
-
-- 4 Sundays
-- 2 Saturdays
-
-Depending on the calendar month, employees may work either
-
-- Five-day weeks
-- Six-day weeks
-
-The scheduling engine must distribute offs fairly.
+- First Shift
+- Second Shift
+- Leave
+- Week Off
 
 ---
 
-# 8. Leave Types
+### BR-006
 
-Current leave categories
-
-## Planned Leave
-
-Submitted in advance.
-
-Should be considered during roster generation.
+A Monthly Roster represents a single planning month.
 
 ---
 
-## Emergency Leave
+### BR-007
 
-Requested on short notice.
-
-May require regeneration of affected roster days.
+Monthly Rosters may be edited until operational planning begins.
 
 ---
 
-Future leave types may include
+### BR-008
 
-- Sick Leave
-- Casual Leave
-- Earned Leave
-- Maternity Leave
-- Paternity Leave
+Leave overrides scheduled shifts.
 
 ---
 
-# 9. Roster Regeneration
+### BR-009
 
-Managers may regenerate
-
-```
-a single day
-```
-
-without affecting the rest of the month's roster.
-
-This minimizes operational disruption.
+Week Off represents employee unavailability.
 
 ---
 
-# 10. Employee Status
+### BR-010
 
-Employees have two independent states.
+Monthly Workforce Planning determines only employee availability.
 
-## Active
-
-```
-is_active = TRUE
-```
-
-Employee participates in roster generation.
+It never assigns operational work.
 
 ---
 
-## Inactive
+# Queue Management Rules
 
-```
-is_active = FALSE
-```
+### BR-011
 
-Employee exists in the system but is excluded from future roster generation.
+Queues are configurable.
 
----
-
-## Archived
-
-```
-is_archived = TRUE
-```
-
-Employee is removed from operational use while preserving historical records.
-
-Archived employees are excluded from all scheduling activities.
+Queues may be activated or archived without changing application code.
 
 ---
 
-# 11. Queue Assignment
+### BR-012
 
-Current implementation
+Queue priority is configurable.
 
-Not yet developed.
-
-Planned functionality
-
-Employees will be assigned operational queues according to business requirements.
-
-The scheduling engine will balance workload across available queues.
+Priority should never be hardcoded.
 
 ---
 
-# 12. Queue Balancing
+### BR-013
 
-The application will ensure that operational queues receive sufficient staffing.
+Archived queues cannot receive new assignments.
 
-Objectives
-
-- Prevent understaffing
-- Prevent overstaffing
-- Balance workload
-- Maximize operational efficiency
-
-Queue assignment logic will be implemented during the Queue module.
+Historical assignments remain available.
 
 ---
 
-# 13. Roster Generation Principles
+# Time Block Rules
 
-The roster engine should
+### BR-014
 
-- Meet minimum staffing requirements
-- Respect leave requests
-- Respect weekly offs
-- Balance Morning and Afternoon shifts
-- Maintain fairness across employees
-- Produce reproducible schedules
+Operational work is divided into configurable Time Blocks.
 
----
+Examples:
 
-# 14. Employee Creation Rules
+Morning
 
-When creating a new employee
+Afternoon
 
-The employee code
-
-- Must be unique
-- Cannot already exist
-
-The system automatically assigns
-
-```
-is_active = TRUE
-
-is_archived = FALSE
-```
-
-These values are managed by the application and are not supplied by the client.
+Evening
 
 ---
 
-# 15. Employee Update Rules
+### BR-015
 
-Future implementation
-
-Managers may update
-
-- Name
-- Role
-- Gender
-- Active status
-
-Employee code is immutable and cannot be changed after creation.
+Time Blocks may be modified without changing application code.
 
 ---
 
-# 16. Employee Archive Rules
+# Daily Allocation Rules
 
-Employees are never physically deleted.
+### BR-016
 
-Instead
-
-```
-is_archived = TRUE
-```
-
-This preserves
-
-- Historical rosters
-- Leave history
-- Audit records
-
-# 16.1 Employee Visibility Rules
-
-Employee listing endpoints return only non-archived employees.
-
-```
-is_archived = FALSE
-```
-
-Archived employees remain stored in the database to preserve historical information.
-
-Future archive management screens will expose archived employees through dedicated endpoints.
-
-This prevents archived employees from participating in normal operational workflows while maintaining historical integrity.
+Daily Allocation consumes employee availability produced by Workforce Planning.
 
 ---
 
-# 17. Roster Integrity Rules
+### BR-017
 
-The application must never produce a roster that violates minimum staffing levels.
-
-Minimum staffing is considered a mandatory business constraint.
+Daily Allocation never modifies Monthly Rosters.
 
 ---
 
-# 18. Future Business Rules
+### BR-018
 
-Future releases will include
-
-## Skill-Based Assignment
-
-Employees may possess different skill sets.
-
-Roster generation will consider skills when assigning queues.
+Each Daily Allocation represents one operational day.
 
 ---
 
-## Holiday Calendar
+### BR-019
 
-National and regional holidays will influence scheduling.
-
----
-
-## Fair Rotation
-
-The scheduling engine will prevent repeated assignment of undesirable shifts.
+Daily Allocation begins as a Draft.
 
 ---
 
-## Maximum Consecutive Working Days
+### BR-020
 
-The engine will prevent excessive consecutive working days.
-
----
-
-## Preferred Shift Requests
-
-Employees may submit preferred shifts.
-
-The engine should attempt to satisfy preferences while maintaining operational requirements.
+Draft allocations may be edited.
 
 ---
 
-# 19. Current Implementation Status
+### BR-021
 
-Implemented
+Published allocations become read-only.
 
-- Employee management
-- Employee retrieval
-- Employee creation
-- Duplicate employee prevention
-- Employee validation
-- Soft archive strategy
-- Active employee concept
-
-Planned
-
-- Queue assignment
-- Leave management
-- Monthly roster generation
-- Daily regeneration
-- Shift balancing
-- Fair rotation
-- Skill-based scheduling
+Future versions may support explicit reopening if required.
 
 ---
 
-# 20. Business Rule Ownership
+# Queue Assignment Rules
 
-Business rules belong exclusively to the Service Layer.
+### BR-022
 
-Repositories perform database operations only.
-
-Routers receive HTTP requests only.
-
-This separation ensures business logic remains independent of frameworks and persistence technologies.
+An employee may monitor multiple queues during the same Time Block.
 
 ---
 
-# 21. Guiding Principle
+### BR-023
 
-Every feature implemented in the application must satisfy the business rules defined in this document.
+A queue may have multiple assigned employees.
 
-If implementation details conflict with business requirements, the business rules take precedence.
+---
+
+### BR-024
+
+Each Queue Assignment represents exactly one:
+
+- Employee
+- Queue
+- Time Block
+
+---
+
+### BR-025
+
+Queue assignments are stored individually.
+
+Multiple queue names must never be stored in a single database field.
+
+---
+
+### BR-026
+
+Queue Assignment records belong to a Daily Allocation.
+
+---
+
+# Supervisor Assignment Rules
+
+### BR-027
+
+Supervisor Assignment is independent from Queue Assignment.
+
+---
+
+### BR-028
+
+Supervisors monitor operational work rather than replacing Queue Assignments.
+
+---
+
+### BR-029
+
+Only employees eligible for supervisory duties may receive Supervisor Assignments.
+
+---
+
+# Staffing Rules
+
+### BR-030
+
+Minimum staffing requirements are configurable.
+
+---
+
+### BR-031
+
+Staffing requirements may differ by Time Block.
+
+Example:
+
+Morning
+
+- Minimum L1
+- Minimum L2
+
+Afternoon
+
+- Minimum L1
+- Minimum L2
+
+Evening
+
+- Minimum L1
+- Minimum L2
+
+---
+
+### BR-032
+
+The Allocation Engine should attempt to satisfy staffing requirements before publishing.
+
+---
+
+# Allocation Engine Rules
+
+### BR-033
+
+Allocation generation is based only on available employees.
+
+---
+
+### BR-034
+
+Employees on Leave are unavailable.
+
+---
+
+### BR-035
+
+Employees on Week Off are unavailable.
+
+---
+
+### BR-036
+
+Archived employees are unavailable.
+
+---
+
+### BR-037
+
+Manual supervisor adjustments always take precedence over automatically generated assignments.
+
+---
+
+### BR-038
+
+Allocation generation should be repeatable.
+
+Generating a Draft should not modify historical allocations.
+
+---
+
+# Historical Data Rules
+
+### BR-039
+
+Historical Monthly Rosters remain unchanged.
+
+---
+
+### BR-040
+
+Historical Daily Allocations remain unchanged after archival.
+
+---
+
+### BR-041
+
+Historical Queue Assignments remain available for reporting.
+
+---
+
+# Validation Rules
+
+The Service Layer validates:
+
+- Duplicate Employee Codes
+- Invalid Queue Assignments
+- Archived entities
+- Invalid Time Blocks
+- Invalid Staffing Requirements
+- Invalid Allocation Status Transitions
+
+---
+
+# Future Business Rules
+
+Future releases may introduce:
+
+- Queue Skills
+- Preferred Queue Rotation
+- Historical Workload Balancing
+- Department Separation
+- Multi-Site Operations
+- AI-Assisted Allocation
+
+These features should integrate without changing existing business rules wherever possible.
+
+---
+
+# Related Documentation
+
+- 01_Project_Overview.md
+- 02_System_Architecture.md
+- 03_Database_Design.md
+- 04_API_Design.md
+- 09_Domain_Model.md
+
+---
+
+**End of Document**

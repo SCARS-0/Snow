@@ -1,127 +1,308 @@
-# Team Rostering & Queue Management System
+# 01 - Project Overview
 
-**Version:** 0.1.0 (Employee Module Foundation Complete)
-
-**Status:** In Development
-
-**Author:** Sherzaman Khan
-
-**Last Updated:** July 2026
+Version: 2.0
+Status: Active
+Last Updated: July 2026
 
 ---
 
-# 1. Project Overview
+# Project Name
 
-## Purpose
-
-The Team Rostering & Queue Management System is an internal web application designed to replace the current Excel-based monthly rostering process used by the operations team.
-
-The application will automate roster generation while still allowing managers to make controlled manual adjustments whenever required.
-
-The system is being designed with enterprise software engineering principles, focusing on maintainability, scalability, testability, and separation of concerns.
+Operations Workforce Management System
 
 ---
 
-# 2. Project Goals
+# Executive Summary
 
-The primary objectives are:
+The Operations Workforce Management System is an enterprise application designed to replace spreadsheet-based workforce planning and daily operational allocation with a centralized, configurable, and maintainable platform.
 
-- Eliminate manual Excel-based roster preparation.
-- Automatically generate optimized monthly rosters.
-- Allow managers to edit only the required days without affecting the entire month's schedule.
-- Track employee assignments, shifts, leaves, and queues.
-- Maintain complete roster history.
-- Support future AI-assisted roster optimization.
+The system enables supervisors to manage employee availability, plan monthly work schedules, generate daily operational allocations, supervise queue coverage, and maintain historical operational records.
+
+The application is designed around real operational workflows rather than generic rostering concepts, allowing workforce planning and daily operations to remain independent while working together through clearly defined business boundaries.
 
 ---
 
-# 3. Current Development Status
+# Vision
 
-## Infrastructure
+To provide a modern enterprise platform that simplifies workforce planning and operational execution while improving consistency, transparency, scalability, and reporting.
 
-- ✅ Dockerized Development Environment
-- ✅ PostgreSQL Database
-- ✅ FastAPI Backend
-- ✅ SQLAlchemy ORM
-- ✅ Alembic Database Migrations
-- ✅ Pydantic Settings Configuration
+The application should reduce manual effort, minimize spreadsheet dependency, improve operational visibility, and provide a foundation for future automation and intelligent workload balancing.
 
 ---
 
-## Employee Module
+# Business Problem
 
-Completed:
+The existing operational process relies heavily on spreadsheets and manual coordination.
 
-- Employee SQLAlchemy Model
-- Repository Layer
-- Service Layer
-- Dependency Injection
-- API Router
-- Request Validation
-- Response Models
-- Global Exception Handling
-- Swagger Documentation
+This creates several challenges:
 
-Implemented APIs:
+- Manual monthly roster preparation
+- Manual daily queue allocation
+- Difficult workload balancing
+- Limited operational visibility
+- High dependence on supervisor knowledge
+- Lack of centralized historical records
+- Limited reporting capabilities
+- Increased operational risk during staffing changes
 
-| Method | Endpoint | Status |
-|----------|------------------------------|--------|
-| GET | /employees/{employee_code} | ✅ |
-| POST | /employees | ✅ |
+The system addresses these issues by introducing structured planning, configurable operational rules, and centralized data management.
 
 ---
 
-## Remaining Employee Module
+# Project Objectives
 
-Planned:
+The primary objectives of the system are:
 
-- List Employees
-- Update Employee
-- Archive Employee
-- Restore Employee
-- Pagination
-- Filtering
-- Search
+- Centralize workforce planning
+- Simplify monthly roster management
+- Automate daily operational allocation
+- Support supervisor review and manual adjustments
+- Improve workload distribution
+- Preserve historical operational data
+- Provide reliable reporting
+- Support future operational growth
+
+The application should assist supervisors rather than replace operational decision making.
 
 ---
 
-## Future Modules
+# Core Business Domains
+
+The application consists of two independent but connected business domains.
+
+## Workforce Planning
+
+Purpose:
+
+Determine employee availability.
+
+Responsibilities include:
+
+- Employee Management
+- Shift Planning
+- Monthly Rosters
+- Leave Management
+- Week Off Planning
+- Workforce Availability
+
+Output:
+
+A list of employees available for work on a given day.
+
+---
+
+## Operations Execution
+
+Purpose:
+
+Transform workforce availability into operational work assignments.
+
+Responsibilities include:
 
 - Queue Management
-- Leave Management
-- Monthly Roster Generator
-- Daily Regeneration Engine
-- Authentication
-- Authorization
-- Audit Logging
-- Dashboard
-- Reporting
+- Time Block Management
+- Daily Allocation
+- Supervisor Allocation
+- Operational Reporting
+
+Output:
+
+A published Daily Operational Plan.
 
 ---
 
-# 4. Technology Stack
+# Business Workflow
+
+The overall operational workflow follows a consistent sequence.
+
+```text
+Employee Management
+        │
+        ▼
+Monthly Workforce Planning
+        │
+        ▼
+Employee Availability
+        │
+        ▼
+Daily Allocation Generation
+        │
+        ▼
+Supervisor Review
+        │
+        ▼
+Manual Adjustments
+        │
+        ▼
+Published Daily Operational Plan
+        │
+        ▼
+Operational Execution
+```
+
+Each module contributes to a specific stage of this workflow.
+
+---
+
+# Functional Modules
+
+The system is organized into several major functional modules.
+
+## Employee Management
+
+Maintains employee information.
+
+Responsibilities include:
+
+- Employee profiles
+- Employment status
+- Skill level
+- Employee archival
+
+---
+
+## Workforce Planning
+
+Responsible for monthly scheduling.
+
+Includes:
+
+- Shift Assignment
+- Week Off Planning
+- Leave Recording
+- Monthly Rosters
+
+---
+
+## Queue Management
+
+Maintains operational queues.
+
+Responsibilities include:
+
+- Queue configuration
+- Queue activation
+- Queue priority
+- Queue criticality
+- Display configuration
+
+---
+
+## Daily Allocation
+
+Generates operational assignments for each working day.
+
+Responsibilities include:
+
+- Queue allocation
+- Supervisor allocation
+- Draft generation
+- Manual adjustments
+- Publication
+
+---
+
+## Reporting
+
+Provides historical and operational reporting.
+
+Future reports may include:
+
+- Staffing utilization
+- Queue coverage
+- Allocation history
+- Productivity metrics
+- Operational dashboards
+
+---
+
+# Key Features
+
+The initial release includes:
+
+- Employee Management
+- Monthly Workforce Planning
+- Queue Master
+- Daily Allocation
+- Supervisor Allocation
+- Historical Record Management
+- REST API
+- Modern React Frontend
+
+Future releases may introduce:
+
+- AI-assisted allocation
+- Historical workload balancing
+- Real-time operational dashboards
+- Multi-department support
+- Multi-site deployment
+- Advanced analytics
+
+---
+
+# Design Philosophy
+
+The project follows several guiding principles.
+
+## Business First
+
+The software models real operational processes rather than adapting business processes to software limitations.
+
+---
+
+## Separation of Responsibilities
+
+Planning and execution are independent business domains.
+
+---
+
+## Configurable Operations
+
+Operational settings should be configurable rather than hardcoded.
+
+Examples include:
+
+- Queues
+- Staffing requirements
+- Time blocks
+- Queue priorities
+
+---
+
+## Supervisor Authority
+
+Automation assists supervisors.
+
+Operational decisions always remain under supervisor control.
+
+---
+
+## Historical Integrity
+
+Historical operational data is preserved.
+
+Employees are archived rather than deleted.
+
+Historical allocations remain available for reporting and auditing.
+
+---
+
+# Technology Stack
 
 ## Backend
 
-- Python 3.12
+- Python
 - FastAPI
-- SQLAlchemy 2.0
-- PostgreSQL 16
-- Alembic
-- Pydantic v2
-- Uvicorn
+- SQLAlchemy
+- PostgreSQL
 
 ---
 
 ## Frontend
 
-Planned
-
-- Next.js
 - React
+- Next.js
 - TypeScript
-- Tailwind CSS
-- dnd-kit
 
 ---
 
@@ -132,179 +313,90 @@ Planned
 
 ---
 
-# 5. Architecture
+# Architectural Principles
 
-The project follows a layered architecture.
+The application follows Clean Architecture.
 
-```
-Client
-    │
-    ▼
-FastAPI Router
-    │
-    ▼
-Service Layer
-    │
-    ▼
-Repository Layer
-    │
-    ▼
-SQLAlchemy ORM
-    │
-    ▼
-PostgreSQL
+Backend
+
+```text
+Router
+    ↓
+Service
+    ↓
+Repository
+    ↓
+Database
 ```
 
-Each layer has a single responsibility.
+Frontend
 
----
-
-# 6. Design Principles
-
-The project follows the following engineering principles.
-
-## Separation of Concerns
-
-Each layer performs only one responsibility.
-
----
-
-## Dependency Injection
-
-Dependencies are created by FastAPI rather than manually instantiated inside business code.
-
----
-
-## Repository Pattern
-
-Repositories are responsible only for persistence.
-
-No business logic exists inside repositories.
-
----
-
-## Service Layer
-
-Services implement business rules.
-
-Services own transactions.
-
-Services are independent of FastAPI.
-
----
-
-## Domain Exceptions
-
-Business logic raises domain exceptions.
-
-HTTP responses are generated by global exception handlers.
-
----
-
-## Single Source of Truth
-
-Application configuration is centralized through:
-
-```
-app/core/config.py
+```text
+Page
+    ↓
+Component
+    ↓
+Service
+    ↓
+ApiClient
+    ↓
+FastAPI
 ```
 
-All application settings originate from:
-
-```
-.env
-```
+Business logic is isolated from presentation and persistence.
 
 ---
 
-# 7. Current Folder Structure
+# Scope
 
-```
-backend/
+The current project focuses on operational workforce management.
 
-    app/
+Included:
 
-        api/
+- Employee Management
+- Workforce Planning
+- Daily Operational Planning
+- Queue Management
+- Reporting Foundation
 
-        core/
+Excluded from the initial release:
 
-        db/
+- Payroll
+- Attendance Tracking
+- HR Administration
+- Performance Reviews
+- Recruitment
+- Employee Self-Service
 
-        dependencies/
-
-        exceptions/
-
-        models/
-
-        repositories/
-
-        schemas/
-
-        services/
-
-        main.py
-
-    alembic/
-
-frontend/
-
-docs/
-
-docker-compose.yml
-```
+These areas may integrate with the system in the future but are outside the current project scope.
 
 ---
 
-# 8. Development Philosophy
+# Success Criteria
 
-This project intentionally prioritizes architecture before features.
+The project will be considered successful when it can:
 
-Every module is developed using the following workflow:
-
-1. Design
-2. Database
-3. Repository
-4. Service
-5. Dependency Injection
-6. API
-7. Exception Handling
-8. Testing
-9. Documentation
-
-This approach minimizes technical debt and results in a maintainable enterprise-grade codebase.
+- Manage employee information
+- Produce monthly workforce plans
+- Generate daily operational allocations
+- Support supervisor review and manual reassignment
+- Publish operational plans
+- Preserve historical operational records
+- Support future business growth without significant architectural redesign
 
 ---
 
-# 9. Current Milestone
+# Related Documentation
 
-Milestone 1 has been completed.
+This document should be read together with:
 
-Completed deliverables:
+- 02_System_Architecture.md
+- 03_Database_Design.md
+- 05_Business_Rules.md
+- 09_Domain_Model.md
 
-- Infrastructure
-- Configuration
-- Database
-- Employee CRUD (Read + Create)
-- Dependency Injection
-- Exception Handling
-- Swagger Documentation
-
-The backend is now capable of creating and retrieving employees through REST APIs.
+The Domain Model provides the detailed business architecture upon which this overview is based.
 
 ---
 
-# 10. Next Milestone
-
-The next development phase focuses on completing the Employee module.
-
-Planned work:
-
-- List Employees
-- Update Employee
-- Archive Employee
-- Transaction Improvements
-- Pagination
-- Filtering
-- Search
-
-After the Employee module is complete, development will begin on the Queue Management module.
+**End of Document**
